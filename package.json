@@ -8,8 +8,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node ./bin/app.js",
-    "dev": "ts-node ./src/app.ts"
+    "start": "node -r tsconfig-paths/register ./bin/app.js",
+    "dev": "ts-node -r tsconfig-paths/register ./src/app.ts"
   },
   "dependencies": {
     "@types/express": "^4.17.7",
@@ -20,6 +20,7 @@
     "express": "^4.17.1",
     "express-openapi-validator": "^3.16.7",
     "swagger-routes-express": "^3.2.1",
+    "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.7",
     "validator": "^13.1.1",
     "yamljs": "^0.3.0"

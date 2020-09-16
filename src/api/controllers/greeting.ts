@@ -1,5 +1,5 @@
 import * as express from 'express'
-import {writeJsonResponse} from '../../utils/express'
+import {writeJsonResponse} from '@exmpl/utils/express'
  
 export function hello(req: express.Request, res: express.Response): void {
   const name = req.query.name || 'stranger'
