@@ -10,12 +10,13 @@ import YAML from 'yamljs'
 import * as api from '@exmpl/api/controllers'
 import config from '@exmpl/config'
 import {expressDevLogger} from '@exmpl/utils/express_dev_logger'
+import logger from '@exmpl/utils/logger'
  
 export async function createServer(): Promise<Express> {
   const yamlSpecFile = './config/openapi.yml'
   const apiDefinition = YAML.load(yamlSpecFile)
   const apiSummary = summarise(apiDefinition)
-  console.info(apiSummary)
+  logger.info(apiSummary)
  
   const server = express()
   
@@ -56,7 +57,7 @@ export async function createServer(): Promise<Express> {
   const connect = connector(api, apiDefinition, {
     onCreateRoute: (method: string, descriptor: any[]) => {
       descriptor.shift()
-      console.log(`${method}: ${descriptor.map((d: any) => d.name).join(', ')}`)
+      logger.verbose(`${method}: ${descriptor.map((d: any) => d.name).join(', ')}`)
     },
     security: {
       bearerAuth: api.auth
