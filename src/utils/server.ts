@@ -8,6 +8,7 @@ import {connector, summarise} from 'swagger-routes-express'
 import YAML from 'yamljs'
  
 import * as api from '@exmpl/api/controllers'
+import config from '@exmpl/config'
 import {expressDevLogger} from '@exmpl/utils/express_dev_logger'
  
 export async function createServer(): Promise<Express> {
@@ -20,11 +21,17 @@ export async function createServer(): Promise<Express> {
   
   server.use(bodyParser.json())
   
-  server.use(morgan(':method :url :status :response-time ms - :res[content-length]'))
+  if (config.morganLogger) {
+    server.use(morgan(':method :url :status :response-time ms - :res[content-length]'))
+  }
   
-  morganBody(server)
-  
-  server.use(expressDevLogger)
+  if (config.morganBodyLogger) {
+    morganBody(server)
+  }
+
+  if (config.exmplDevLogger) {
+    server.use(expressDevLogger)
+  }
   
   // setup API validator
   const validatorOptions = {
