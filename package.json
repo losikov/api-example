@@ -12,7 +12,9 @@
     "dev": "ts-node ./src/app.ts"
   },
   "dependencies": {
+    "@types/express": "^4.17.7",
     "@types/node": "^14.0.27",
+    "express": "^4.17.1",
     "typescript": "^3.9.7"
   },
   "devDependencies": {
