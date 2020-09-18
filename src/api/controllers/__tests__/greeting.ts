@@ -3,7 +3,7 @@ import {Express} from 'express-serve-static-core'
 
 import db from '@exmpl/utils/db'
 import {createServer} from '@exmpl/utils/server'
-import {createDummyAndAuthorize} from '@exmpl/tests/user'
+import {createDummyAndAuthorize, deleteUser} from '@exmpl/tests/user'
 
 let server: Express
 
@@ -58,6 +58,33 @@ describe('GET /hello', () => {
   })
 })
 
+async function sendGoodbye(token: string) {
+  return new Promise(function(resolve, reject) {
+    request(server)
+    .get(`/api/v1/goodbye`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect('Content-Type', /json/)
+    .expect(200)
+    .end(function(err, res) {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+
+it('goodbye perfromance test', async () => {
+  const dummy = await createDummyAndAuthorize()
+
+  const now = new Date().getTime()
+	let i = 0
+	do {
+    i += 1
+    await sendGoodbye(dummy.token)
+  } while (new Date().getTime() - now < 1000)
+
+  // console.log(`goodbye perfromance test: ${i}`)
+})
+
 describe('GET /goodbye', () => {
   it('should return 200 & valid response to authorization with fakeToken request', async done => {
     const dummy = await createDummyAndAuthorize()
@@ -68,7 +95,22 @@ describe('GET /goodbye', () => {
       .expect(200)
       .end(function(err, res) {
         if (err) return done(err)
-        expect(res.body).toMatchObject({'message': `Goodbye, ${dummy.userId}!`})
+        expect(res.body).toMatchObject({'message': `Goodbye, ${dummy.name}!`})
+        done()
+      })
+  })
+
+  it('should return 500 & valid response if authenticated user was deleted', async done => {
+    const dummy = await createDummyAndAuthorize()
+    await deleteUser(dummy.userId)
+    request(server)
+      .get(`/api/v1/goodbye`)
+      .set('Authorization', `Bearer ${dummy.token}`)
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toEqual({error: {type: 'internal_server_error', message: 'Internal Server Error'}})
         done()
       })
   })

@@ -26,3 +26,8 @@ export async function createDummyAndAuthorize(): Promise<AuthorizedDummyUser> {
   const authToken = await UserService.createAuthToken(user.userId)
   return {...user, token: authToken.token}
 }
+
+export async function deleteUser(userId: string): Promise<void> {
+  const dbUser = await User.findById(userId)
+  await dbUser!.deleteOne()
+}

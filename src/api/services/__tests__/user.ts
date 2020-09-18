@@ -12,15 +12,17 @@ afterAll(async () => {
   await db.close()
 })
 
-it('login perfromance test', async () => {
+it('auth perfromance test', async () => {
+  const dummy = await createDummyAndAuthorize()
+
   const now = new Date().getTime()
 	let i = 0
-	const dummy = await createDummyAndAuthorize()
 	do {
     i += 1
     await user.auth(`Bearer ${dummy.token!}`)
   } while (new Date().getTime() - now < 1000)
-  // console.log(i)
+
+  // console.log(`auth perfromance test: ${i}`)
 })
 
 describe('auth', () => {
