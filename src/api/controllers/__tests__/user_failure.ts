@@ -28,6 +28,24 @@ describe('auth failure', () => {
   })
 })
 
+describe('login failure', () => {
+  it('should return 500 & valid response if auth rejects with an error', async done => {
+    (UserService.login as jest.Mock).mockResolvedValue({error: {type: 'unkonwn'}})
+    request(server)
+      .post(`/api/v1/login`)
+      .send({
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      })
+      .expect(500)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toMatchObject({error: {type: 'internal_server_error', message: 'Internal Server Error'}})
+        done()
+      })
+  })
+})
+
 describe('createUser failure', () => {
   it('should return 500 & valid response if auth rejects with an error', async done => {
     (UserService.createUser as jest.Mock).mockResolvedValue({error: {type: 'unkonwn'}})
