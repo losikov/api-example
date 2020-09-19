@@ -36,6 +36,7 @@
     "mongoose": "^5.10.5",
     "morgan": "^1.10.0",
     "morgan-body": "^2.5.0",
+    "node-cache": "^5.1.2",
     "swagger-routes-express": "^3.2.1",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.7",

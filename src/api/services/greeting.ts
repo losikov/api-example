@@ -1,11 +1,17 @@
-import User from '@exmpl/api/models/user'
+import User, {IUser} from '@exmpl/api/models/user'
+import cacheLocal from '@exmpl/utils/cache_local'
 import logger from '@exmpl/utils/logger'
 
 async function goodbye(userId: string): Promise<{message: string}> {
   try {
-    const user = await User.findById(userId)
+    let user: IUser | undefined | null = cacheLocal.get<IUser>(userId)
     if (!user) {
-      throw new Error(`User not found`)
+      user = await User.findById(userId)
+      if (!user) {
+        throw new Error(`User not found`)
+      }
+
+      cacheLocal.set(userId, user)
     }
 
     return {message: `Goodbye, ${user.name}!`}

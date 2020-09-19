@@ -20,6 +20,8 @@ interface Config {
   privateKeyFile: string
   privateKeyPassphrase: string
   publicKeyFile: string,
+
+  localCacheTtl: number,
   
   mongo: {
     url: string,
@@ -37,6 +39,8 @@ const config: Config = {
   privateKeyFile: parsedEnv.PRIVATE_KEY_FILE as string,
   privateKeyPassphrase: parsedEnv.PRIVATE_KEY_PASSPHRASE as string,
   publicKeyFile: parsedEnv.PUBLIC_KEY_FILE as string,
+
+  localCacheTtl: parsedEnv.LOCAL_CACHE_TTL as number,
   
   mongo: {
     url: parsedEnv.MONGO_URL as string,

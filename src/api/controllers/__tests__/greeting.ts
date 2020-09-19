@@ -76,8 +76,8 @@ it('goodbye perfromance test', async () => {
   const dummy = await createDummyAndAuthorize()
 
   const now = new Date().getTime()
-	let i = 0
-	do {
+  let i = 0
+  do {
     i += 1
     await sendGoodbye(dummy.token)
   } while (new Date().getTime() - now < 1000)
