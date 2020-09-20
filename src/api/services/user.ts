@@ -3,6 +3,7 @@ import jwt, {SignOptions, VerifyErrors, VerifyOptions} from 'jsonwebtoken'
 
 import User, {IUser} from '@exmpl/api/models/user'
 import config from '@exmpl/config'
+import cacheExternal from '@exmpl/utils/cache_external'
 import cacheLocal from '@exmpl/utils/cache_local'
 import logger from '@exmpl/utils/logger'
 
@@ -26,18 +27,34 @@ const verifyOptions: VerifyOptions = {
   algorithms: ['RS256']
 }
 
-function auth(bearerToken: string): Promise<AuthResponse> {
+async function auth(bearerToken: string): Promise<AuthResponse> {
+  const token = bearerToken.replace('Bearer ', '')
+
+  try {
+    const userId = await cacheExternal.getProp(token)
+    if (userId) {
+      return {userId: userId}
+    }
+  } catch (err) {
+    logger.warn(`login.cache.addToken: ${err}`)
+  }
+
   return new Promise(function(resolve, reject) {
-    const token = bearerToken.replace('Bearer ', '')
     jwt.verify(token, publicKey, verifyOptions, (err: VerifyErrors | null, decoded: object | undefined) => {
-      if (err === null && decoded !== undefined) {
-        const d = decoded as {userId?: string, exp: number}
-        if (d.userId) {
-          resolve({userId: d.userId})
-          return
-        }
+      if (err === null && decoded !== undefined && (decoded as any).userId !== undefined) {
+        const d = decoded as {userId: string, exp: number}
+        const expireAfter = d.exp - Math.round((new Date()).valueOf() / 1000)
+        cacheExternal.setProp(token, d.userId, expireAfter)
+          .then(() => {
+            resolve({userId: d.userId})
+          })
+          .catch((err) => {
+            resolve({userId: d.userId})
+            logger.warn(`auth.cache.addToken: ${err}`)
+          })
+      } else {
+        resolve({error: {type: 'unauthorized', message: 'Authentication Failed'}})
       }
-      resolve({error: {type: 'unauthorized', message: 'Authentication Failed'}})
     })
   })
 }
@@ -49,8 +66,14 @@ function createAuthToken(userId: string): Promise<{token: string, expireAt: Date
         const expireAfter = 2 * 604800 /* two weeks */
         const expireAt = new Date()
         expireAt.setSeconds(expireAt.getSeconds() + expireAfter)
-        
-        resolve({token: encoded, expireAt: expireAt})
+
+        cacheExternal.setProp(encoded, userId, expireAfter)
+          .then(() => {
+            resolve({token: encoded, expireAt: expireAt})
+          }).catch(err => {
+            logger.warn(`createAuthToken.setProp: ${err}`)
+            resolve({token: encoded, expireAt: expireAt})
+          })
       } else {
         reject(err)
       }

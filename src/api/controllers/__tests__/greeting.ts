@@ -1,6 +1,7 @@
 import request from 'supertest'
 import {Express} from 'express-serve-static-core'
 
+import cacheExternal from '@exmpl/utils/cache_external'
 import db from '@exmpl/utils/db'
 import {createServer} from '@exmpl/utils/server'
 import {createDummyAndAuthorize, deleteUser} from '@exmpl/tests/user'
@@ -8,11 +9,13 @@ import {createDummyAndAuthorize, deleteUser} from '@exmpl/tests/user'
 let server: Express
 
 beforeAll(async () => {
+  await cacheExternal.open()
   await db.open()
   server = await createServer()
 })
 
 afterAll(async () => {
+  await cacheExternal.close()
   await db.close()
 })
 
@@ -72,7 +75,7 @@ async function sendGoodbye(token: string) {
   })
 }
 
-it('goodbye perfromance test', async () => {
+if (false) it('goodbye perfromance test', async () => {
   const dummy = await createDummyAndAuthorize()
 
   const now = new Date().getTime()
@@ -82,7 +85,7 @@ it('goodbye perfromance test', async () => {
     await sendGoodbye(dummy.token)
   } while (new Date().getTime() - now < 1000)
 
-  // console.log(`goodbye perfromance test: ${i}`)
+  console.log(`goodbye perfromance test: ${i}`)
 })
 
 describe('GET /goodbye', () => {

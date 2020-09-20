@@ -1,32 +1,36 @@
 import faker from 'faker'
 
+import cacheExternal from '@exmpl/utils/cache_external'
 import db from '@exmpl/utils/db'
 import {createDummy, createDummyAndAuthorize} from '@exmpl/tests/user'
 import user from '../user'
 
+
 beforeAll(async () => {
+  await cacheExternal.open()
   await db.open()
 })
 
 afterAll(async () => {
+  await cacheExternal.close()
   await db.close()
 })
 
-it('auth perfromance test', async () => {
+if (false) it('auth perfromance test', async () => {
   const dummy = await createDummyAndAuthorize()
 
   const now = new Date().getTime()
-	let i = 0
-	do {
+  let i = 0
+  do {
     i += 1
     await user.auth(`Bearer ${dummy.token!}`)
   } while (new Date().getTime() - now < 1000)
 
-  // console.log(`auth perfromance test: ${i}`)
+  console.log(`auth perfromance test: ${i}`)
 })
 
 describe('auth', () => {
-  it('should resolve with true and valid userId for hardcoded token', async () => {
+  it('should resolve with true and valid userId for valid token', async () => {
     const dummy = await createDummyAndAuthorize()
     await expect(user.auth(dummy.token)).resolves.toEqual({userId: dummy.userId})
   })
