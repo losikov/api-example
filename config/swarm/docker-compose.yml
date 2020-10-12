@@ -1,0 +1,120 @@
+version: "3.8"
+
+# virtual networks inside cluster, to let runing containers talk to each other
+networks:
+  nginx-reverse: # root nginx-reverse to api-example and wp
+  api-db: # api-example to mongo and redis
+  wp-db: # wp to mysql
+
+# declare all services: nginx-reverse (api-example (redis, mongo), wp (mysql))
+services:
+  # root service: nginx as reverse-proxy for 1) api-example and 2) wp
+  nginx-reverse:
+    image: nginx
+    restart: always
+    deploy:
+      placement: # to run this service on a specific node
+        constraints:
+          - 'node.role == manager'
+    ports: # exposed ports out of cluster
+      - 80:80
+      # - 443:443 # if you have certs
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro,delegated
+      - ./nginx-reverse/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro,delegated
+      # - ./nginx-reverse/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro,delegated # if you have certs
+      # - ./nginx-reverse/privkey.pem:/etc/nginx/certs/privkey.pem:ro,delegated # if you have certs
+    networks:
+      - nginx-reverse
+    depends_on: # do not start service until dependencies are started
+      - api-example
+      - wp
+
+  # 1) api-example + redis + mongo
+  api-example:
+    image: losikov/api-example # specify your repo name
+    build: # to build image with docker-compose
+      context: ../../
+      dockerfile: ./Dockerfile
+    restart: always
+    # deploy: # uncomment to run multiple api-example services
+    #   replicas: 4
+    #   resources:
+    #     limits:
+    #       cpus: "1.5"
+    #       memory: 256M
+    environment:
+      - MONGO_URL=mongodb://mongo/exmpl # 'mongo' is a name (hostname) of container
+      - REDIS_URL=redis://redis:6379 # 'redis' is a name (hostname) of container
+    networks:
+      - nginx-reverse
+      - api-db
+    depends_on: # do not start service until dependencies are started
+      - redis
+      - mongo
+
+  redis:
+    image: redis
+    restart: always
+    # ports: # uncomment if you would like to connect from host
+    #   - 6379:6379
+    command: redis-server --save ''
+    networks:
+      - api-db
+  
+  mongo:
+    image: mongo
+    restart: always
+    deploy:
+      placement: # to run this service on a specific node
+        constraints:
+          - 'node.role == manager'
+    # ports: # uncomment if you would like to connect from host
+    #   - 27017:27017
+    volumes:
+      - ../../../docker/mongodb:/data/db:delegated
+    networks:
+      - api-db
+
+  # 2) WordPress + mysql
+  wp:
+    image: wordpress:latest
+    restart: always
+    # deploy: # uncomment to run multiple api-example services
+    #   replicas: 2
+    #   resources:
+    #     limits:
+    #       cpus: "2.0"
+    #       memory: 1024M
+    environment:
+      WORDPRESS_DB_HOST: mysql  # 'mysql' is a name (hostname) of container
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: your_mysql_pasword
+      WORDPRESS_DB_NAME: wp
+    ports: # exposed ports out of cluster (to fix host name after first launch, and restart)
+      - 8080:80 # comment me after fixing wp hostname
+    networks:
+      - nginx-reverse
+      - wp-db
+    depends_on: # do not start service until dependencies are started
+      - mysql
+
+  mysql:
+    image: mysql:8
+    restart: always
+    deploy:
+      placement: # to run this service on a specific node
+        constraints:
+          - 'node.role == manager'
+    command: "--default-authentication-plugin=mysql_native_password"
+    cap_add: # mbind: Operation not permitted issue
+      - SYS_NICE  # CAP_SYS_NICE
+    environment:
+      MYSQL_ROOT_PASSWORD: your_mysql_root_password
+      MYSQL_DATABASE: wp
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: your_mysql_pasword
+    volumes:
+      - ../../../docker/mysql:/var/lib/mysql
+    networks:
+      - wp-db

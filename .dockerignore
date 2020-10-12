@@ -1,0 +1,12 @@
+.DS_Store
+.git
+.gitignore
+__mocks__
+README.md
+LICENSE
+coverage
+jest.config.js
+node_modules
+scripts
+**/__tests__/**
+src/tests

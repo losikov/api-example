@@ -19,6 +19,8 @@ This repo is a code base for [the tutorial](https://medium.com/@losikov/backend-
 
 [Part 8. External Caching in Node.js with Redis](https://medium.com/@losikov/part-8-external-caching-in-node-js-with-redis-2f12607c995)
 
+[Part 9. Docker, Docker Compose, Complete Intro](https://medium.com/@losikov/part-9-docker-docker-compose-complete-intro-2cfcc510bd8e)
+
 *Stay tuned for the next parts...*
 
 [Appendix A. The Project Structure](https://medium.com/@losikov/appendix-a-the-project-structure-863edab1469e)
