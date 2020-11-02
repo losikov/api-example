@@ -37,7 +37,7 @@ class MongoConnection {
       if (config.mongo.url === 'inmemory') {
         logger.debug('connecting to inmemory mongo db')
         this._mongoServer = new MongoMemoryServer()
-        const mongoUrl = await this._mongoServer.getConnectionString()
+        const mongoUrl = await this._mongoServer.getUri()
         await mongoose.connect(mongoUrl, opts)
       } else {
         logger.debug('connecting to mongo db: ' + config.mongo.url)
