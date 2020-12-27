@@ -10,7 +10,11 @@
     "build": "tsc",
     "start": "ENV_FILE=./config/.env.prod node -r tsconfig-paths/register ./bin/app.js",
     "dev": "ENV_FILE=./config/.env.dev ts-node -r tsconfig-paths/register ./src/app.ts",
-    "test:unit": "ENV_FILE=./config/.env.test jest"
+    "test:unit": "ENV_FILE=./config/.env.test jest",
+    "database:initialize": "ENV_FILE=./config/.env.dev ts-node -r ./src/bin/initializeDatabase.ts",
+    "database:rollback": "knex migrate:rollback",
+    "migrate": "ENV_FILE=./config/.env.dev knex --knexfile knexfile.ts migrate:latest",
+    "migrate:make": "ENV_FILE=./config/.env.dev knex --knexfile knexfile.ts migrate:make"
   },
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
@@ -33,11 +37,14 @@
     "express-openapi-validator": "^3.16.7",
     "faker": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.21.12",
     "mongodb-memory-server": "^6.7.6",
     "mongoose": "^5.10.5",
     "morgan": "^1.10.0",
     "morgan-body": "^2.5.0",
     "node-cache": "^5.1.2",
+    "objection": "^2.2.3",
+    "pg": "^8.4.2",
     "redis": "^3.0.2",
     "swagger-routes-express": "^3.2.1",
     "tsconfig-paths": "^3.9.0",
