@@ -22,6 +22,8 @@ interface Config {
   publicKeyFile: string,
 
   localCacheTtl: number,
+
+  redisUrl: string,
   
   mongo: {
     url: string,
@@ -41,6 +43,8 @@ const config: Config = {
   publicKeyFile: parsedEnv.PUBLIC_KEY_FILE as string,
 
   localCacheTtl: parsedEnv.LOCAL_CACHE_TTL as number,
+
+  redisUrl: parsedEnv.REDIS_URL as string,
   
   mongo: {
     url: parsedEnv.MONGO_URL as string,

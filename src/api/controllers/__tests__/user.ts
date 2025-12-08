@@ -3,18 +3,21 @@ import faker from 'faker'
 import request from 'supertest'
 import {Express} from 'express-serve-static-core'
 
+import cacheExternal from '@exmpl/utils/cache_external'
 import db from '@exmpl/utils/db'
 import {createServer} from '@exmpl/utils/server'
 import {createDummy} from '@exmpl/tests/user'
 
 let server: Express
 beforeAll(async () => {
+  await cacheExternal.open()
   await db.open()
   server = await createServer()
 })
 
 afterAll(async () => {
-	await db.close()
+  await cacheExternal.close()
+  await db.close()
 })
 
 describe('POST /api/v1/login', () => {
